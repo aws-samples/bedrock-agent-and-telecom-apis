@@ -1,0 +1,37 @@
+{
+  "agent": {
+    "alias": "TSTALIASID",
+    "name": "telco-api-agent",
+    "version": "DRAFT",
+    "id": "1RMMHTJWMS"
+  },
+  "inputText": "My tracking_number is 225566771",
+  "sessionId": "602785933054688",
+  "sessionAttributes": {},
+  "promptSessionAttributes": {},
+  "apiPath": "/revGeocode",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "properties": [
+          {
+            "name": "Latitude",
+            "type": "number",
+            "format": "double",
+            "value": "50"
+          },
+          {
+            "name": "Longitude",
+            "type": "number",
+            "format": "double",
+            "value": "7"
+          }
+        ]
+      }
+    }
+  },
+  "httpMethod": "POST",
+  "messageVersion": "1.0",
+  "actionGroup": "Agent_Group",
+  "parameters": []
+}

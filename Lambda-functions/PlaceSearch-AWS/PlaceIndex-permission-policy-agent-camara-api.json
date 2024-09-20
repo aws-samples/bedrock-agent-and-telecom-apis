@@ -1,0 +1,10 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": "geo:SearchPlaceIndexForPosition",
+			"Resource": "arn:aws:geo:<Region>:<Account-id>:place-index/PlaceIndex_for_my_agent"
+		}
+	]
+}
