@@ -1,1 +1,0 @@
-location-retrieval.py requires lambda layer for the python package requests.
