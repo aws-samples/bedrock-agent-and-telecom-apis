@@ -1,0 +1,62 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Parcel Status API",
+    "description": "API to find the status of the parcels and the phone number of the courier when the parcel is in the last mile status",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/ParcelStatus": {
+      "post": {
+        "description": "Get status of the parcel and get the phone number of the courier", 
+        "requestBody": {
+          "content": {
+            "application/json": {  
+              "schema": {
+                "$ref": "#/components/schemas/ParcelId"
+              }
+            }
+          },
+          "required": true 
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with parcel's courier phone number if the parcel is in the last mile status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelStatusResponse"
+                }
+              } 
+            }  
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": { 
+      "ParcelId": {
+        "type": "object",
+        "required": [
+          "parcelId" 
+        ],
+        "properties": {
+          "parcelId": {
+            "type": "string",
+            "description": "ID of the parcel"  
+          }
+        }
+      },
+      "ParcelStatusResponse": {
+        "type": "object", 
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "Parcel's courier phone number if the parcel is in the last mile status."  
+          } 
+        }
+      }
+    }
+  } 
+}
