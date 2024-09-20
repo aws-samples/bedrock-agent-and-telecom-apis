@@ -1,0 +1,30 @@
+{
+  "agent": {
+    "alias": "TSTALIASID",
+    "name": "telco-api-agent",
+    "version": "DRAFT",
+    "id": "1RMMHTJWMS"
+  },
+  "inputText": "My tracking_number is 225566771",
+  "sessionId": "602785933054688",
+  "sessionAttributes": {},
+  "promptSessionAttributes": {},
+  "apiPath": "/ParcelStatus",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "properties": [
+          {
+            "name": "tracking_number",
+            "type": "int",
+            "value": "225566771"
+          }
+        ]
+      }
+    }
+  },
+  "httpMethod": "POST",
+  "messageVersion": "1.0",
+  "actionGroup": "Agent_Group",
+  "parameters": []
+}
