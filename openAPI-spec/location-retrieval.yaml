@@ -1,0 +1,427 @@
+openapi: 3.0.3
+info:
+  title: Location retrieval API
+  description: |
+    This API provides the ability to retrieve a device location. 
+
+    # Introduction
+
+    With this API, customers can retrieve the area where a certain user device is localized. 
+    The area provided in the response could be described:
+    -  by a circle determined by coordinates (latitude and longitude) and a radius. 
+    -  by a simple polygon delimited by segments connecting consecutively an array of coordinates (points). The last point connects to the first point to delimit a closed shape bounded with straight sides.
+
+    The retrieved shape depends on the network conditions at the subscriber's location and any of the supported shapes could be received.
+    
+    The requester could optionally ask for a freshness of the localization information by providing a maxAge ("I want a location not older than 600 seconds")
+
+    The result accuracy depends on the network's ability and accuracy to locate the device. 
+    
+    Additionally to location information, the answer will also provide indication about the location time. 
+
+    Location retrieval API could be useful in scenarios such as:
+
+    - Fraud protection to ensure a given user is located in the region, country or location authorized for financial transactions
+    - Verify the GPS coordinates reported by the app on a device to ensure the GPS was not faked e.g. for content delivery with regional restrictions
+    - Contextual-based advertising, to trigger advertising after verifying the device is in the area of interest
+
+    - Smart Mobility (Vehicle/bikes renting): obtain the location of a vehicle/bike to guarantee they are rented correctly
+
+    **Note**: Location is in most jurisdictions considered to be sensitive data and thereby consent by device owner/user must be verified before providing it to the developer.
+
+    # Relevant terms and definitions
+
+    * **Device**: A device refers to any physical entity that can connect to a network and participate in network communication.
+
+    * **Area**: It specifies the geographical surface where a device may be physically located.
+
+    * **Max Age**: Maximum age of the location information which is accepted for the location retrieval (in seconds).
+
+    * **Last Location Time** : Last date and time when the device was localized.
+
+
+    # API Functionality
+
+    The API exposes a single endpoint/operation:
+
+    - `/retrieve` : Retrieve where the device is localized.
+     The operation returns:
+        * a localization defined with a circle with center specified by the latitude and longitude, and radius for answer accuracy,
+        * a timestamp about location information freshness.
+
+    # Further info and support
+
+    (FAQs will be added in a later version of the documentation)    
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: project-email@sample.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.1.0
+externalDocs:
+  description: Product documentation at Camara
+  url: https://github.com/camaraproject/
+
+servers:
+  - url: '{apiRoot}/location-retrieval/v0'
+    variables:
+      apiRoot:
+        default: http://localhost:9091
+        description: API root
+
+tags:
+  - name: Location retrieval
+    description: Retrieve the location of a device
+
+paths:
+  /retrieve:
+    post:
+      tags:
+        - Location retrieval
+      summary: 'Execute location retrieval for a user equipment'
+      description: Retrieve the area where a certain user device is localized.
+      operationId: retrieveLocation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrievalLocationRequest'
+        required: true
+      responses:
+        '200':
+          description: Location retrieval result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              examples:
+                LOCATION_CIRCLE:
+                  $ref: "#/components/examples/RETRIEVAL_CIRCLE"
+                LOCATION_POLYGON:
+                  $ref: "#/components/examples/RETRIEVAL_POLYGON"
+        '400':
+          $ref: '#/components/responses/RetrieveLocationBadRequest400'
+        '401':
+          $ref: '#/components/responses/Generic401'
+        '403':
+          $ref: '#/components/responses/Generic403'
+        '404':
+          $ref: '#/components/responses/Generic404'
+        '500':
+          $ref: '#/components/responses/Generic500'
+        '503':
+          $ref: '#/components/responses/Generic503'
+      security:
+        - openId:
+          - location-retrieval:read
+
+components:
+  securitySchemes:
+    openId:
+      type: openIdConnect
+      openIdConnectUrl: https://example.com/.well-known/openid-configuration
+  schemas:
+    RetrievalLocationRequest:
+      type: object
+      properties:
+        device:
+          $ref: '#/components/schemas/Device'
+        maxAge:
+          type: integer
+          description: Maximum age of the location information which is accepted for the location retrieval (in seconds)
+          minimum: 60
+      required:
+        - device
+
+    Device:
+      description: |
+        End-user equipment able to connect to a mobile network. Examples of devices include smartphones or IoT sensors/actuators.
+
+        The developer can choose to provide the below specified device identifiers:
+
+        * `ipv4Address`
+        * `ipv6Address`
+        * `phoneNumber`
+        * `networkAccessIdentifier`
+
+        NOTE: the MNO might support only a subset of these options. The API invoker can provide multiple identifiers to be compatible across different MNOs. In this case the identifiers MUST belong to the same device.
+      type: object
+      properties:
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        networkAccessIdentifier:
+          $ref: "#/components/schemas/NetworkAccessIdentifier"
+        ipv4Address:
+          $ref: "#/components/schemas/DeviceIpv4Addr"
+        ipv6Address:
+          $ref: "#/components/schemas/DeviceIpv6Address"
+      minProperties: 1
+
+    PhoneNumber:
+      description: A public identifier addressing a telephone subscription. In mobile networks it corresponds to the MSISDN (Mobile Station International Subscriber Directory Number). In order to be globally unique it has to be formatted in international format, according to E.164 standard, optionally prefixed with '+'.
+      type: string
+      pattern: '^\+?[0-9]{5,15}$'
+      example: "123456789"
+
+    NetworkAccessIdentifier:
+      description: A public identifier addressing a subscription in a mobile network. In 3GPP terminology, it corresponds to the GPSI formatted with the External Identifier ({Local Identifier}@{Domain Identifier}). Unlike the telephone number, the network access identifier is not subjected to portability ruling in force, and is individually managed by each operator.
+      type: string
+      example: "123456789@domain.com"
+
+    DeviceIpv4Addr:
+      type: object
+      description: |
+        The device should be identified by either the public (observed) IP address and port as seen by the application server, or the private (local) and any public (observed) IP addresses in use by the device (this information can be obtained by various means, for example from some DNS servers).
+
+        If the allocated and observed IP addresses are the same (i.e. NAT is not in use) then  the same address should be specified for both publicAddress and privateAddress.
+
+        If NAT64 is in use, the device should be identified by its publicAddress and publicPort, or separately by its allocated IPv6 address (field ipv6Address of the Device object)
+
+        In all cases, publicAddress must be specified, along with at least one of either privateAddress or publicPort, dependent upon which is known. In general, mobile devices cannot be identified by their public IPv4 address alone.
+      properties:
+        publicAddress:
+          $ref: "#/components/schemas/SingleIpv4Addr"
+        privateAddress:
+          $ref: "#/components/schemas/SingleIpv4Addr"
+        publicPort:
+          $ref: "#/components/schemas/Port"
+      anyOf:
+        - required: [publicAddress, privateAddress]
+        - required: [publicAddress, publicPort]
+      example:
+        publicAddress: "84.125.93.10"
+        publicPort: 59765
+
+    SingleIpv4Addr:
+      description: A single IPv4 address with no subnet mask
+      type: string
+      format: ipv4
+      example: "84.125.93.10"
+
+    Port:
+      description: TCP or UDP port number
+      type: integer
+      minimum: 0
+      maximum: 65535
+
+    DeviceIpv6Address:
+      description: |
+        The device should be identified by the observed IPv6 address, or by any single IPv6 address from within the subnet allocated to the device (e.g. adding ::0 to the /64 prefix).
+      type: string
+      format: ipv6
+      example: 2001:db8:85a3:8d3:1319:8a2e:370:7344
+
+
+
+    Location:
+      type: object
+      description: Device location
+      required:
+        - lastLocationTime
+        - area
+      properties:
+        lastLocationTime: 
+          description: Last date and time when the device was localized. It must follow RFC 3339 and must have time zone. Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z)
+          type: string
+          format: date-time
+        area:
+          $ref: '#/components/schemas/Area'
+        
+    Area:
+      type: object
+      properties:
+        areaType:
+          $ref: "#/components/schemas/AreaType"
+      required:
+        - areaType
+      discriminator:
+        propertyName: areaType
+        mapping:
+          CIRCLE: "#/components/schemas/Circle"
+          POLYGON: "#/components/schemas/Polygon"
+
+    AreaType:
+      type: string
+      description: |
+        Type of this area.
+        CIRCLE - The area is defined as a circle.
+        POLYGON - The area is defined as a polygon.
+      enum:
+        - CIRCLE
+        - POLYGON
+
+    Circle:
+      description: Circular area
+      allOf: 
+        - $ref: "#/components/schemas/Area"
+        - type: object
+          required:
+            - center
+            - radius
+          properties:
+            center: 
+              $ref: "#/components/schemas/Point"
+            radius:
+              type: number
+              description: Distance from the center in meters
+              minimum: 1
+
+    Polygon:
+      allOf:
+        - $ref: "#/components/schemas/Area"
+        - type: object
+          required:
+            - boundary
+          properties:
+            boundary:
+              $ref: "#/components/schemas/PointList"
+
+    PointList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Point"
+      minItems: 3
+      maxItems: 15
+
+    Point:
+      type: object
+      description: Coordinates (latitude, longitude) defining a location in a map
+      required: 
+        - latitude
+        - longitude
+      properties: 
+        latitude:
+          $ref: "#/components/schemas/Latitude"
+        longitude:
+          $ref: "#/components/schemas/Longitude"
+      example: 
+        latitude: 50.735851
+        longitude: 7.10066
+
+    Latitude:
+      description: Latitude component of a location
+      type: number
+      format: double
+      minimum: -90
+      maximum: 90
+  
+    Longitude:
+      description: Longitude component of location
+      type: number
+      format: double
+      minimum: -180
+      maximum: 180
+
+    ErrorInfo:
+      type: object
+      required:
+        - status
+        - code
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code returned along with this error response
+        code:
+          type: string
+          description: Code given to this error
+        message:
+          type: string
+          description: Detailed error description
+  responses:
+    RetrieveLocationBadRequest400:
+      description: |-
+        Problem with the client request. In addition to regular scenario of `INVALID_ARGUMENT`, another scenarios may exist:
+          - maxAge threshold cannot be satisfied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          examples:
+            InvalidArgument:
+              value:
+                status: 400
+                code: INVALID_ARGUMENT
+                message: "Invalid argument"
+            MaxAgeIssue:
+              value:
+                status: 400
+                code: LOCATION_RETRIEVAL.MAXAGE_INVALID_ARGUMENT
+                message: "maxAge threshold cannot be satisfied"
+    Generic401:
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          example:
+            status: 401
+            code: UNAUTHENTICATED
+            message: "Authorization failed: ..."
+    Generic403:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          example:
+            status: 403
+            code: PERMISSION_DENIED
+            message: "Operation not allowed: ..."
+    Generic404:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          example:
+            status: 404
+            code: NOT_FOUND
+            message: 'The specified resource is not found'
+    Generic500:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          example:
+            status: 500
+            code: INTERNAL
+            message: "Internal server error"
+    Generic503:
+      description: Service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          example:
+            status: 503
+            code: UNAVAILABLE
+            message: "Service unavailable"
+  examples:
+    RETRIEVAL_CIRCLE:
+      value:
+        lastLocationTime: 2023-10-17T13:18:23.682Z
+        area:
+          areaType: CIRCLE
+          center: 
+            latitude: 45.754114
+            longitude: 4.860374
+          radius: 800
+    RETRIEVAL_POLYGON:
+      value:
+        lastLocationTime: 2023-10-17T13:18:23.682Z
+        area:
+          areaType: POLYGON
+          boundary:
+            - latitude: 45.754114
+              longitude: 4.860374
+            - latitude: 45.753845
+              longitude: 4.863185
+            - latitude: 45.752490
+              longitude: 4.861876
+            - latitude: 45.751224
+              longitude: 4.861125
+            - latitude: 45.751442
+              longitude: 4.859827
