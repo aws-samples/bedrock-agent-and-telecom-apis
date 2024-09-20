@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create a Lambda function and grant permissions for Amazon Bedrock service and Amazon Location Service
+
+Parameters:
+  IndexName:
+    Type: String
+    Default: PlaceIndex_for_my_agent
+    Description: Place Index Name to use in the Place Search Lambda
+
+Resources:
+
+  PlaceSearchFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Place-Search-AWS-Location
+      Runtime: python3.10
+      Handler: lambda_function.lambda_handler
+      ReservedConcurrentExecutions: 5
+      Code:
+        S3Bucket: !Sub 'customer-agent-with-camara-api-${AWS::AccountId}'
+        S3Key: Place-Search-AWS-Location.zip
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          INDEX_NAME: !Ref IndexName
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: LocationServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'geo:SearchPlaceIndexForPosition'
+                Resource: !Sub 'arn:aws:geo:${AWS::Region}:${AWS::AccountId}:place-index/${IndexName}'
+
+  BedrockInvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PlaceSearchFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+
+Outputs:
+  LambdaFunctionArn:
+    Description: The ARN of the Lambda function
+    Value: !GetAtt PlaceSearchFunction.Arn

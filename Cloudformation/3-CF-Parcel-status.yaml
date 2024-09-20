@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create a Lambda function and grant permissions for Amazon Bedrock service and S3 bucket access
+
+Resources:
+
+  ParcelStatusFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Parcel_Status_api
+      Runtime: python3.10
+      Handler: lambda_function.lambda_handler
+      ReservedConcurrentExecutions: 5 # Set the desired value
+      Timeout: 10 # Set the desired timeout value in seconds
+      Code:
+        S3Bucket: !Sub 'customer-agent-with-camara-api-${AWS::AccountId}'
+        S3Key: Parcel_Status_api.zip
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3ReadAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                Resource: !Sub 'arn:aws:s3:::customer-agent-with-camara-api-${AWS::AccountId}/*'
+
+  BedrockInvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ParcelStatusFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+
+Outputs:
+  LambdaFunctionArn:
+    Description: The ARN of the Lambda function
+    Value: !GetAtt ParcelStatusFunction.Arn
