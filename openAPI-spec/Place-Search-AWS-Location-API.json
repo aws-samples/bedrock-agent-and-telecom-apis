@@ -1,0 +1,185 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "AWS API",
+    "description": "API to interrogate Amazon Location service in AWS",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/revGeocode": {
+      "post": {
+        "description": "Call this function to get the address of a location when you have the coordinates longitude and latitude",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Point"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with the address corresponding to the provided longitude and latitude",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                  "body": {
+                              "type": "string",
+                              "description": "Address corresponding to the provided longitude and latitude"
+                            }
+                }
+              }
+            }
+          }   	
+        }     	
+      }       	
+    }         	
+  }
+  },
+  
+  "components":{
+  	"schemas":{
+  		
+  		"Location": {
+        "type": "object",
+        "description": "Device location",
+        "required": [
+          "lastLocationTime",
+          "area"
+        ],
+        "properties": {
+          "lastLocationTime": {
+            "description": "Last date and time when the device was localized. It must follow RFC 3339 and must have time zone. Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z)",
+            "type": "string",
+            "format": "datetime"
+          },
+          "area": {
+            "$ref": "#/components/schemas/Area"
+          }
+        }
+      },
+      
+      "Area": {
+        "type": "object",
+        "properties": {
+          "areaType": {
+            "$ref": "#/components/schemas/AreaType"
+          }
+        },
+        "required": [
+          "areaType"
+        ],
+        "discriminator": {
+          "propertyName": "areaType",
+          "mapping": {
+            "CIRCLE": "#/components/schemas/Circle",
+            "POLYGON": "#/components/schemas/Polygon"
+          }
+        }
+      },
+      
+      "AreaType": {
+        "type": "string",
+        "description": "Type of this area.CIRCLE - The area is defined as a circle. POLYGON - The area is defined as a polygon.",
+        "enum": [
+          "CIRCLE",
+          "POLYGON"
+        ]
+      },
+      
+      "Circle": {
+        "description": "Circular area",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Area"
+          },
+          {
+            "type": "object",
+            "required": [
+              "center",
+              "radius"
+            ],
+            "properties": {
+              "center": {
+                "$ref": "#/components/schemas/Point"
+              },
+              "radius": {
+                "type": "number",
+                "description": "Distance from the center in meters",
+                "minimum": 1
+              }
+            }
+          }
+        ]
+      },
+      
+      "Polygon": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Area"
+          },
+          {
+            "type": "object",
+            "required": [
+              "boundary"
+            ],
+            "properties": {
+              "boundary": {
+                "$ref": "#/components/schemas/PointList"
+              }
+            }
+          }
+        ]
+      },
+      "PointList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Point"
+        },
+        "minItems": 3,
+        "maxItems": 15
+      },
+      "Point": {
+        "type": "object",
+        "description": "Coordinates (latitude, longitude) defining a location in a map",
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "properties": {
+          "latitude": {
+            "$ref": "#/components/schemas/Latitude"
+          },
+          "longitude": {
+            "$ref": "#/components/schemas/Longitude"
+          }
+        },
+        "example": {
+          "latitude": 50.735851,
+          "longitude": 7.10066
+        }
+      },
+      "Latitude": {
+        "description": "Latitude component of a location",
+        "type": "number",
+        "format": "double",
+        "minimum": -90,
+        "maximum": 90
+      },
+      "Longitude": {
+        "description": "Longitude component of location",
+        "type": "number",
+        "format": "double",
+        "minimum": -180,
+        "maximum": 180
+      }
+  	}
+  }
+  	
+     
+    
+  }
