@@ -1,7 +1,7 @@
 To simulate the device location Camara compliant API, follow those steps:
 
 1. Create a lambda function, give a name (i.e. Camara_API_External) select the latest python runtime and click on the "Create function" button
-2. Upload the zip file from the S3 bucket and insert "s3://customer-agent-with-camara-api-${AWS_ACCOUNT_ID}/Camara_API_External.zip" 
+2. Upload the zip file that you find in the S3 bucket with name "s3://customer-agent-with-camara-api-${AWS_ACCOUNT_ID}/Camara_API_External.zip" 
  (where ${AWS_ACCOUNT_ID is your AWS AccountId (i.e. s3://customer-agent-with-camara-api-12345678902/Camara_API_External.zip)
 3. Click on "Add Trigger" and Select "API Gateway" as source. Select "Create a new API", select "REST API" and "Open" in the Security Section, and click on the "Add" button. 
 4. Copy the API endpoint that you find in the Configuration tab of the lambda, under the trigger section (example of API end point format to copy "https://3kp0gyiq5d.execute-api.us-west-2.amazonaws.com/default/Camara_API_External")
