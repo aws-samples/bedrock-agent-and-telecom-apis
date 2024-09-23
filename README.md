@@ -372,17 +372,15 @@ For every of our three API (/parcelStatus, /Location retrieval, /revGeocode)
 2.	Provide the Action Group Name (i.e. action-group-location-retrieval)  and Description (Optional). 
 - In the "Action group type" Select “Define with API Schema” 
 - In the "Action group invocation" section, select the "Select an existing Lambda fucntion" Option
-- Choose the specific Lambda function (i.e. location-retrival),
+- Choose the specific Lambda function (i.e. location-retrieval),
 - In the "Action group schema" section,  Select “Select an existing API Schema” option, Click on "Browse S3" button, Select the "s3://customer-agent-with-camara-api-${AWS_ACCOUNT_ID}" S3 Bucket, Select the file with OpenAPI specification (i.e. location-retrieval.yaml), click "Choose" 
 - Click on "Create" button to create the “Action Group”  
 
 Repeat the same procedure for remaining API, using the specified values for lambda function name (i.e.Parcel_Status_api, Place-Search-AWS-Location) and the API Schema file in the S3 bucket (i.e. ParcelStatus-API.json and Place-Search-AWS-Location-API.json).
 
-Verify that the 
-
 Finally  Click on “Save and exit button” in the Agent Builder page to Save the new Agent’s configuration 
 
-Verify that the “Instructions for the Agent”, in the "Agent Details" section is filled with the instruction configured in the "Step b) -  Create the agent with Amazon Bedrock".
+Verify that the “Instructions for the Agent”, in the "Agent Details" section is filled with the instruction previously configured.
 
 Click on “Prepare Button” to prepare the Agent (the Agent Status must be a in “Ready state” to allow a testing)
 
