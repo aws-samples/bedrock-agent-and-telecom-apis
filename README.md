@@ -6,8 +6,8 @@ We create an AI-based customer chatbot by using the capabilities of Agents for A
 We use an example scenario with one specific Telco API and Amazon Location to show the building blocks of the solution (GenAI agent interacting with both Telco API and AWS services). The combination of Telecom APIs, AWS services, and GenAI techniques powered by Amazon Bedrock presents an opportunity for innovation. This enables creating customer care applications for different industries and businesses, offering possibilities for customization and personalization.
 
 **Note**: This git repository and the related blog is an example starter project designed to provide a demonstration and basis for builders to create their own solutions. It should not be considered Production-ready. The code should be modified for production use, for example, by including input format validation and more sophisticated error handling.  Moreover, when invoking in production the actual Telco Camara API, that is here simulated through an Amazon API GW and AWS Lambda implementation, a proper authorisation mechanism must be implemented according to the API Telco Operator security rules.
-
-This repository is intended to be solely used as companion of the AWS blog [link to the blog when published] .   
+   
+This repository is intended to accompany an AWS blog that is in the process of being published.
 
 ###  Example scenario and solution overview
 
@@ -405,7 +405,6 @@ After successful testing, you can deploy your agent. To deploy an agent in your 
 ## Cleaning up
 
 To avoid incurring future charges, delete all the created resources (S3 bucket, Amazon Location Place Index, Lambda functions, Agents for Amazon Bedrock, directories on your AWS CloudShell environment, Cloudformation stacks)
-
 
 
 ## Security
